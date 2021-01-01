@@ -20,7 +20,6 @@ const UserSchema = new Schema({
       },
       date: {
         type: Date,
-        default: ISODateWithoutTime,
       },
     },
   ],

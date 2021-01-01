@@ -4,6 +4,8 @@ const router = Router();
 
 const { model } = require("mongoose");
 const UserSchema = require("./schema");
+const { ISODateWithoutTime } = require("./shared");
+
 const userModel = model("user", UserSchema);
 
 router.use(bodyParser.urlencoded({ extended: false }));
@@ -55,15 +57,29 @@ router.post("/new-user", async (req, res) => {
   }
 });
 
-router.post("/add", (req, res) => {
-  const { userId, description, duration, date } = req.body;
-  res.json({
-    _id: userId,
-    username: "myusername",
-    date,
-    duration,
-    description,
-  });
+router.post("/add", async (req, res) => {
+  try {
+    let { userId, description, duration, date } = req.body;
+    const user = await userModel.findById(userId);
+    user.log.push({
+      description,
+      duration: parseInt(duration),
+      date: date ? new Date(date) : ISODateWithoutTime(),
+    });
+    const { _id, username, log } = await user.save();
+    const newExercise = log.pop();
+    res.json({
+      _id,
+      username,
+      duration: newExercise.duration,
+      description: newExercise.description,
+      date: newExercise.date.toDateString(),
+    });
+  } catch (err) {
+    console.log("err in POST /add", err);
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    res.status(500).send(err.message);
+  }
 });
 
 module.exports = router;
