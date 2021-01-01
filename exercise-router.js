@@ -29,9 +29,25 @@ router.get("/log", (req, res) => {
   });
 });
 
-router.post("/new-user", (req, res) => {
-  const { username } = req.body;
-  res.send(`New User ${username} created`);
+router.post("/new-user", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = new userModel({
+      username,
+    });
+    const { _id, username: savedUsername } = await user.save();
+    res.json({ _id, username: savedUsername });
+  } catch (err) {
+    switch (err.code) {
+      case 11000:
+        res.set("Content-Type", "text/plain; charset=utf-8");
+        res.status(400).send("Username already taken");
+        break;
+      default:
+        res.status(500).send("Internal server error");
+        break;
+    }
+  }
 });
 
 router.post("/add", (req, res) => {
