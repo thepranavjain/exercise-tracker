@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { model, connect, connection } = require("mongoose");
-const UserSchema = require("./schema");
+const { connect, connection } = require("mongoose");
+const exerciseRouter = require("./exercise-router");
 
 const { MONGO_URI, PORT } = process.env;
 
@@ -20,13 +20,12 @@ connection.once("open", () =>
   console.log("\x1b[32m%s\x1b[0m", "Successfully connected to MongoDB")
 );
 
-const userModel = model("user", UserSchema);
-
 app.use(cors());
 app.use(express.static("public"));
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
+app.use("/api/exercise", exerciseRouter);
 
 const listener = app.listen(PORT || 3000, () => {
   console.log(
