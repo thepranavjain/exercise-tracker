@@ -43,17 +43,11 @@ router.post("/new-user", async (req, res) => {
     const { _id, username: savedUsername } = await user.save();
     res.json({ _id, username: savedUsername });
   } catch (err) {
-    if (err.code === 11000) {
-      res.set("Content-Type", "text/plain; charset=utf-8");
-      res.status(400).send("Username already taken");
-    } else if (err.errors.username.kind === "maxlength") {
-      res.set("Content-Type", "text/plain; charset=utf-8");
-      res.status(400).send("username too long");
-    } else {
-      console.log("error in POST /new-user:", err.message);
-      res.set("Content-Type", "text/plain; charset=utf-8");
-      res.status(400).send(err.errors.username.message || err.message);
-    }
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    if (err.code === 11000) res.status(400).send("Username already taken");
+    else if (err._message === "user validation failed")
+      res.status(400).send(err.errors[Object.keys(err.errors)[0]].message);
+    else res.status(500).send(err.message);
   }
 });
 
