@@ -38,14 +38,16 @@ router.post("/new-user", async (req, res) => {
     const { _id, username: savedUsername } = await user.save();
     res.json({ _id, username: savedUsername });
   } catch (err) {
-    switch (err.code) {
-      case 11000:
-        res.set("Content-Type", "text/plain; charset=utf-8");
-        res.status(400).send("Username already taken");
-        break;
-      default:
-        res.status(500).send("Internal server error");
-        break;
+    if (err.code === 11000) {
+      res.set("Content-Type", "text/plain; charset=utf-8");
+      res.status(400).send("Username already taken");
+    } else if (err.errors.username.kind === "maxlength") {
+      res.set("Content-Type", "text/plain; charset=utf-8");
+      res.status(400).send("username too long");
+    } else {
+      console.log("error in /new-user:", err.message);
+      res.set("Content-Type", "text/plain; charset=utf-8");
+      res.status(400).send(err.errors.username.message);
     }
   }
 });

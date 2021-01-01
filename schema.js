@@ -6,6 +6,7 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     unique: true,
+    maxlength: 20,
   },
   log: [
     {
