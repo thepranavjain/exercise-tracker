@@ -8,11 +8,14 @@ const userModel = model("user", UserSchema);
 
 router.use(bodyParser.urlencoded({ extended: false }));
 
-router.get("/users", (req, res) => {
-  res.json([
-    { _id: "001", username: "user 1" },
-    { _id: "002", username: "user 2" },
-  ]);
+router.get("/users", async (req, res) => {
+  try {
+    res.json(await userModel.find({}, "_id username"));
+  } catch (err) {
+    console.log("error in GET /users:", err.message);
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    res.status(500).send(err.message);
+  }
 });
 
 router.get("/log", (req, res) => {
@@ -45,9 +48,9 @@ router.post("/new-user", async (req, res) => {
       res.set("Content-Type", "text/plain; charset=utf-8");
       res.status(400).send("username too long");
     } else {
-      console.log("error in /new-user:", err.message);
+      console.log("error in POST /new-user:", err.message);
       res.set("Content-Type", "text/plain; charset=utf-8");
-      res.status(400).send(err.errors.username.message);
+      res.status(400).send(err.errors.username.message || err.message);
     }
   }
 });
