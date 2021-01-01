@@ -13,6 +13,7 @@ const UserSchema = new Schema({
       description: {
         type: String,
         required: true,
+        maxlength: 20,
       },
       duration: {
         type: Number,

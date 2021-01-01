@@ -61,8 +61,9 @@ router.post("/add", async (req, res) => {
   try {
     let { userId, description, duration, date } = req.body;
     const user = await userModel.findById(userId);
+    if (!user) throw new Error("Unknown userId");
     user.log.push({
-      description,
+      description: description.trim(),
       duration: parseInt(duration),
       date: date ? new Date(date) : ISODateWithoutTime(),
     });
@@ -78,7 +79,10 @@ router.post("/add", async (req, res) => {
   } catch (err) {
     console.log("err in POST /add", err);
     res.set("Content-Type", "text/plain; charset=utf-8");
-    res.status(500).send(err.message);
+    if (err.message === "Unknown userId") res.status(400).send(err.message);
+    else if (err._message === "user validation failed")
+      res.status(400).send(err.errors[Object.keys(err.errors)[0]].message);
+    else res.status(500).send(err.message);
   }
 });
 
