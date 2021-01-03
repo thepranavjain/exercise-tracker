@@ -1,5 +1,4 @@
 const { Schema } = require("mongoose");
-const { ISODateWithoutTime } = require("./shared");
 
 const UserSchema = new Schema({
   username: {

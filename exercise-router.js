@@ -20,18 +20,41 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.get("/log", (req, res) => {
-  const { userId, from, to, limit } = req.query;
-  res.json({
-    _id: userId,
-    username: "myusername",
-    count: 3,
-    log: [
-      { description: "ex 3", duration: 30, date: "Fri Jan 01 2021" },
-      { description: "ex 2", duration: 35, date: "Fri Jan 01 2021" },
-      { description: "ex 1", duration: 30, date: "Fri Jan 01 2021" },
-    ],
-  });
+router.get("/log", async (req, res) => {
+  try {
+    let { userId, from, to, limit } = req.query;
+    let { _doc: user } = await userModel.findById(userId, "-__v -log._id");
+    if (!user) throw new Error("Unknown userId");
+    /**
+     * TODO:: Apply filter logic more efficiently
+     */
+    const dateRegex = /^\d{4}\-\d{1,2}\-\d{1,2}$/;
+    if (from && dateRegex.test(from)) {
+      from = new Date(from);
+      if (from.toString() != "Invalid Date")
+        user.log = user.log.filter((exercise) => exercise.date >= from);
+    }
+    if (to && dateRegex.test(to)) {
+      to = new Date(to);
+      if (to.toString() != "Invalid Date")
+        user.log = user.log.filter((exercise) => exercise.date <= to);
+    }
+    if (limit && limit.length) {
+      limit = parseInt(limit);
+      if (!isNaN(limit) && limit < user.log.length)
+        user.log = user.log.slice(-limit);
+    }
+    user.count = user.log.length;
+    user.log = res.json({
+      ...user,
+      log: user.log.map((exercise) => {
+        return { ...exercise._doc, date: exercise.date.toDateString() };
+      }),
+    });
+  } catch (err) {
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    res.status(400).send(err.message);
+  }
 });
 
 router.post("/new-user", async (req, res) => {

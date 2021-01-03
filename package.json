@@ -4,8 +4,8 @@
   "description": "A REST API project, part of Free Code Camp's curriculum",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon",
-    "start": "node server.js"
+    "dev": "TZ=UTC nodemon",
+    "start": "TZ=UTC node server.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
